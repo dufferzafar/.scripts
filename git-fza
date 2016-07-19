@@ -4,6 +4,7 @@ help() {
   echo "Fuzzy Git File Adder - based on fzf"
   echo ""
   echo "Usage: git fza <path>"
+  exit 1
 }
 
 command -v fzf >/dev/null 2>&1 || { echo >&2 "fzf is required but not installed (https://github.com/junegunn/fzf)"; exit 1; }
@@ -13,8 +14,7 @@ if [ "$#" -ne 1 ]; then
 fi
 
 # TODO: Restrict files to already tracked files?
-files=$(git status --porcelain | awk '{print $2}')
-matches=$(echo "$files" | fzf --no-sort -f "$1")
+matches=$(git status --porcelain | awk '{print $2}' | fzf --no-sort -f "$1")
 
 if [[ $(echo "$matches" | wc -l) -ne 1 ]]; then
   echo "The following files matched the pattern:"
@@ -23,7 +23,7 @@ if [[ $(echo "$matches" | wc -l) -ne 1 ]]; then
   echo ""
   # TODO: Support adding of all matching files, with a switch? (-a | --all)
   echo "Adding of only a single file match is supported."
-  exit
+  exit 1
 fi
 
 # All done!
