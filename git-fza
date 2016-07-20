@@ -9,7 +9,7 @@ help() {
 
 command -v fzf >/dev/null 2>&1 || { echo >&2 "fzf is required but not installed (https://github.com/junegunn/fzf)"; exit 1; }
 
-if [ "$#" -ne 1 ]; then
+if [ "$#" -gt 1 ]; then
     help
 fi
 
