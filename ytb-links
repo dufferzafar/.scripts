@@ -18,16 +18,31 @@ Examples:
 
 import re
 import sys
+
 import pyquery
+
+HEADER = """
+# {title}
+# {url}"""
+
+VIDEO = """
+# {time} - {title}
+https://youtube.com{url}"""
 
 
 def get_video_links(playlist_url):
     pq = pyquery.PyQuery(url=playlist_url)
-    for link in pq('td.pl-video-title > a'):
-        print('# ' + link.text.strip())
+
+    title = pq('h1.pl-header-title')
+    links = pq('td.pl-video-title > a')
+    times = pq('td.pl-video-time span')
+
+    print(HEADER.format(title=title.text(), url=playlist_url))
+    print('#' * (len(playlist_url) + 2))
+
+    for link, time in zip(links, times):
         url = re.sub(r'&list=[\w-]+', '', link.get('href'))
-        print('https://youtube.com' + url)
-        print()
+        print(VIDEO.format(time=time.text, title=link.text.strip(), url=url))
 
 
 if __name__ == '__main__':
