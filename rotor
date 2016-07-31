@@ -1,0 +1,36 @@
+#!/usr/bin/python
+"""
+rotor - minimalistic rtorrent client
+
+Usage:
+    rotor ls
+    rotor add <torrent>
+"""
+
+import xmlrpclib
+
+import docopt
+
+SERVER_URL = ""
+
+
+def ls(r):
+    # Get torrents in the main view
+    mainview = r.download_list("", "main")
+
+    for torrent in mainview:
+        print(r.d.get_name(torrent))
+
+
+def add(r, torrent):
+    r.load_start(torrent)
+
+if __name__ == '__main__':
+    args = docopt.docopt(__doc__)
+
+    r = xmlrpclib.Server(SERVER_URL)
+
+    if args['add']:
+        add(r, args['<torrent>'])
+    elif args['ls']:
+        ls(r)
