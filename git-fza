@@ -16,7 +16,7 @@ fi
 # TODO: Restrict files to already tracked files?
 # TODO: Support adding of all matching files, with a switch? (-a | --all)
 # (can also be achieved by setting a hotkey for "toggle-all" action in fzf)
-matches=$(git status --porcelain | awk '{print $2}' | fzf --no-sort --multi --select-1 --exit-0 --query "$1")
+matches=$(git status --porcelain . | awk '{print $2}' | fzf --no-sort --multi --select-1 --exit-0 --query "$1")
 
 # All done!
 git add $matches
