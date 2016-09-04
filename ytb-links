@@ -4,6 +4,10 @@
 
 The output is in a format that can be fed into youtube-dl via the -a switch.
 
+Usage:
+    ytb-links <playlist_url>
+    ytb-links <playlist_url> -f <file>
+
 Examples:
 
     ytb-links https://www.youtube.com/playlist?list=PL8B24C31197EC371C
@@ -17,8 +21,8 @@ Examples:
 """
 
 import re
-import sys
 
+import docopt
 import pyquery
 
 HEADER = """
@@ -30,8 +34,15 @@ VIDEO = """
 https://youtube.com{url}"""
 
 
-def get_video_links(playlist_url):
-    pq = pyquery.PyQuery(url=playlist_url)
+def get_video_links(playlist_url, file=None):
+
+    if file is not None:
+        with open(file) as inp:
+            html = inp.read()
+
+        pq = pyquery.PyQuery(html)
+    else:
+        pq = pyquery.PyQuery(url=playlist_url)
 
     title = pq('h1.pl-header-title')
     links = pq('td.pl-video-title > a')
@@ -46,4 +57,10 @@ def get_video_links(playlist_url):
 
 
 if __name__ == '__main__':
-    get_video_links(sys.argv[1])
+    args = docopt.docopt(__doc__)
+
+    if args['<playlist_url>']:
+        if args['-f']:
+            get_video_links(args['<playlist_url>'], file=args['<file>'])
+        else:
+            get_video_links(args['<playlist_url>'])
