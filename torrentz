@@ -25,7 +25,9 @@ def get_torrent_links(source):
         href = a.get('href')
 
         if href and (href.startswith("magnet") or
-                     href.endswith(".torrent") and href not in seen):
+                     href.endswith(".torrent") and
+                     href not in seen and
+                     "1080p" not in a.get('title', '')):
 
             print("%s %s" % (a.get('title', ''), href))
             print()
