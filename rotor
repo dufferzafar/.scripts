@@ -5,8 +5,10 @@ rotor - minimalistic rtorrent client
 Usage:
     rotor ls
     rotor add <torrent>
+    rotor add -i <file>
 """
 
+import sys
 import xmlrpclib
 
 import docopt
@@ -22,15 +24,25 @@ def ls(r):
         print(r.d.get_name(torrent))
 
 
-def add(r, torrent):
-    r.load_start(torrent)
-
 if __name__ == '__main__':
     args = docopt.docopt(__doc__)
 
     r = xmlrpclib.Server(SERVER_URL)
 
     if args['add']:
-        add(r, args['<torrent>'])
+        if args['-i']:
+            if args['<file>'] == '-':
+                file = sys.stdin
+            else:
+                file = open(args['<file>'])
+
+            # TODO: Is reading all lines at once necessary?
+            for torrent in file.readlines():
+                if torrent.strip():
+                    r.load(torrent.strip())
+
+            file.close()
+        else:
+            r.load_start(args['<torrent>'])
     elif args['ls']:
         ls(r)
