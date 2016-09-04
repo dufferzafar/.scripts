@@ -9,6 +9,7 @@ Usage:
 """
 
 import sys
+import urllib.parse
 
 import pyquery
 
@@ -29,10 +30,15 @@ def get_torrent_links(source):
                      href not in seen and
                      "1080p" not in a.get('title', '')):
 
+            seen.add(href)
+
+            # Handle relative URLs
+            if href.startswith("/"):
+                url = urllib.parse.urlsplit(source)
+                href = "%s://%s" % (url.scheme, url.netloc) + href
+
             print("%s %s" % (a.get('title', ''), href))
             print()
-
-            seen.add(href)
 
 
 if __name__ == '__main__':
