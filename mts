@@ -3,6 +3,9 @@
 import requests
 import pyquery
 
+from datetime import date, datetime
+
+
 # Yes, your password is sent as plain text
 CREDENTIALS = dict(
     mdn="",
@@ -24,9 +27,18 @@ t = pq('#fup_container > li:nth-child(2) > ul').text()
 data = t[:t.find("MB")+2]
 expiry = t[t.find("MB")+3:]
 
+# Calculate suggested usage
+expiry_date = datetime.strptime(expiry, "%d-%b-%Y %H:%M:%S").date()
+days_left = (expiry_date - date.today()).days
+suggested = int(data[:-3]) // days_left
+
 # Print out details
-print("""
+output = """
 Balance: %s
 
-Expiry Date: %s """ % (data, expiry)
-)
+Expiry Date: %s
+
+Suggested Usage: %d MB per day
+"""
+
+print(output % (data, expiry, suggested))
