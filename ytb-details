@@ -1,0 +1,59 @@
+#!/usr/bin/env python3
+
+# pafy is a convenience wrapper over youtube-dl
+import pafy
+
+# click is for creating the cli
+import click
+
+import humanfriendly
+
+DETAILS = """
+# {title}
+# {duration} - {size} - {resolution}
+{url}"""
+
+
+def video_details(url):
+    video = pafy.new(url)
+
+    size = 0
+    res = 0
+    for s in video.streams:
+        w, h = s.dimensions
+        if w == 640:
+            size = s.get_filesize()
+            res = s.resolution
+
+    print(
+        DETAILS.format(
+            title=video.title,
+            duration=video.duration,
+            size=humanfriendly.format_size(size),
+            resolution=res,
+            url=url
+        )
+    )
+
+    return size
+
+
+@click.command()
+@click.argument('url', required=False)
+@click.option('--file', '-f', type=click.File('r'))
+def main(url, file):
+
+    if url:
+        video_details(url)
+    elif file:
+        total = 0
+
+        for line in file.readlines():
+            if "youtube" in line and not line.startswith("#"):
+                size = video_details(line)
+                total += size
+
+        print("# Total Download Size: %s" % humanfriendly.format_size(total))
+
+if __name__ == '__main__':
+    main()
