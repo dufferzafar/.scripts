@@ -11,10 +11,12 @@
 | `rotor`       |  Python  | Very Minimalistic rtorrent client. |
 | `songspk`     |  Python  | Extract mp3 links from sites. |
 | `torrentz`    |  Python  | Extract torrent/magnet links from sites. |
+| `ytb-details` |  Python  | Extract details like details like title, size of Youtube videos. |
 | `ytb-links`   |  Python  | Extract Video links from a Youtube Playlist. |
-<!-- |               |          |                                          | -->
 
 ## todo
 
 * I have 3 different scripts that extract some sort of links from webpages.
     * They could be merged into a single `links` script?
+
+<!-- |               |          |                                          | -->
