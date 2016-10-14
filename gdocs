@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+
+import re
+
+import click
+import pyquery
+
+
+DRIVE_RE = re.compile(
+    r"https://drive\.google\.com/file/d/([^/]*)/(?:view|edit)\?usp=sharing"
+)
+
+DIRECT = "https://drive.google.com/uc?export=download&id={file_id}"
+
+
+def to_direct_link(url):
+    """
+    Convert Google Drive Sharing links to Direct Download Links.
+
+    >>> to_direct_link("https://drive.google.com/file/d/0B4fk8L6brI_eX1U5Ui1Lb1FpVG8/view?usp=sharing")
+    https://drive.google.com/uc?export=download&id=0B4fk8L6brI_eX1U5Ui1Lb1FpVG8
+    """
+    if not url:
+        return
+
+    m = re.match(DRIVE_RE, url)
+
+    if not m:
+        return
+
+    print(DIRECT.format(file_id=m.group(1)))
+
+
+def fetch_urls(url):
+    """ Extract all Google Drive links from a webpage. """
+    pq = pyquery.PyQuery(url=url)
+
+    for a in pq('a'):
+        to_direct_link(a.get('href'))
+
+
+@click.command()
+@click.argument('url')
+def cli(url):
+    fetch_urls(url)
+
+
+if __name__ == '__main__':
+    cli()
