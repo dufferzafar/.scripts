@@ -34,7 +34,7 @@ def get_cmdline_arguments():
 
 def main():
     options, filenames = get_cmdline_arguments()
-    output_pdf_name = options.output_filename + ".pdf"
+    output_pdf_name = options.output_filename
     files_to_merge = []
 
     # get PDF files
@@ -59,13 +59,13 @@ def main():
             output_pdf_stream.addPage(f.getPage(i))
             if i == 0:
                 basename = os.path.basename(str(filenames[k]))
-                output_pdf_stream.addBookmark(basename[:-4]), j)
-            j=j + 1
+                output_pdf_stream.addBookmark(basename[:-4], j)
+            j = j + 1
         k += 1
 
     # create output pdf file
     try:
-        output_pdf_file=open(output_pdf_name, "wb")
+        output_pdf_file = open(output_pdf_name, "wb")
         output_pdf_stream.write(output_pdf_file)
     finally:
         output_pdf_file.close()
