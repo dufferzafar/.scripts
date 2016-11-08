@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
-"""Get Video links from a Youtube Playlist URL.
+"""Get Video links from a URL.
 
 The output is in a format that can be fed into youtube-dl via the -a switch.
 
 Usage:
-    ytb-links <playlist_url>
-    ytb-links <playlist_url> -f <file>
+    ytb-links <url>
+    ytb-links <url> -f <file>
 
 Examples:
 
@@ -34,33 +34,54 @@ VIDEO = """
 https://youtube.com{url}"""
 
 
-def get_video_links(playlist_url, file=None):
-
+def pq_from_file_or_url(url, file):
     if file is not None:
         with open(file) as inp:
             html = inp.read()
 
         pq = pyquery.PyQuery(html)
     else:
-        pq = pyquery.PyQuery(url=playlist_url)
+        pq = pyquery.PyQuery(url=url)
+
+    return pq
+
+
+def from_ytb_playlist(url, file=None):
+    pq = pq_from_file_or_url(url, file)
 
     title = pq('h1.pl-header-title')
     links = pq('td.pl-video-title > a')
     times = pq('td.pl-video-time span')
 
-    print(HEADER.format(title=title.text(), url=playlist_url))
-    print('#' * (len(playlist_url) + 2))
+    print(HEADER.format(title=title.text(), url=url))
+    print('#' * (len(url) + 2))
 
     for link, time in zip(links, times):
         url = re.sub(r'&list=[\w-]+', '', link.get('href'))
         print(VIDEO.format(time=time.text, title=link.text.strip(), url=url))
 
 
+# TODO: Extract file support to a common place, and add in this function too
+def from_generic_page(url, file=None):
+    pq = pq_from_file_or_url(url, file)
+
+    print(HEADER.format(title=pq('title').text(), url=url))
+    print('#' * (len(url) + 2))
+    print()
+
+    for link in pq('iframe'):
+        href = link.get('src')
+
+        if href and ("youtube.com/" in href or "youtu.be/" in href):
+            print(href)
+
+
 if __name__ == '__main__':
     args = docopt.docopt(__doc__)
+    url = args['<url>']
+    file = args.get('<file>')
 
-    if args['<playlist_url>']:
-        if args['-f']:
-            get_video_links(args['<playlist_url>'], file=args['<file>'])
-        else:
-            get_video_links(args['<playlist_url>'])
+    if url and "youtube.com/playlist" in url:
+        from_ytb_playlist(url, file=file)
+    elif url:
+        from_generic_page(url, file=file)
