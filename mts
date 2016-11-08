@@ -29,7 +29,7 @@ expiry = t[t.find("MB")+3:]
 
 # Calculate suggested usage
 expiry_date = datetime.strptime(expiry, "%d-%b-%Y %H:%M:%S").date()
-days_left = (expiry_date - date.today()).days
+days_left = (expiry_date - date.today()).days + 1
 suggested = int(data[:-3]) // days_left
 
 # Print out details
