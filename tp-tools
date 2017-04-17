@@ -1,0 +1,23 @@
+#!/usr/bin/env python3
+
+""" Bunch of functions that assist me in stealing my neighbor's wifi.  """
+
+from random import randint as rand
+import click
+
+
+@click.group()
+def cli():
+    pass
+
+
+@cli.command("mac-rule")
+def random_mac_rule():
+    mac = (rand(0, 255), rand(0, 255), rand(0, 255),
+           rand(0, 255), rand(0, 255), rand(0, 255))
+    mac_str = "%02x-%02x-%02x-%02x-%02x-%02x" % mac
+    print("Rule %s" % mac_str[9:])
+    print("MAC: %s" % mac_str.upper())
+
+if __name__ == '__main__':
+    cli()
