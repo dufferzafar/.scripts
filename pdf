@@ -35,12 +35,6 @@ def cmd_wkhtmltopdf(url, title):
     ]
 
 
-@click.command()
-@click.option('--wkhtmltopdf', '-w', is_flag=True)
-@click.option('--cutycapt', '-c', is_flag=True)
-@click.argument('url')
-def cli(url, cutycapt, wkhtmltopdf):
-    title = fetch_title(url)
 
     cmd = cmd_wkhtmltopdf(url, title)
 
@@ -50,6 +44,22 @@ def cli(url, cutycapt, wkhtmltopdf):
     print(" ".join(cmd))
     subprocess.call(cmd)
 
+
+@click.command()
+@click.option('--wkhtmltopdf', '-w', is_flag=True)
+@click.option('--cutycapt', '-c', is_flag=True)
+@click.argument('url', required=False)
+@click.option('--file', '-f', type=click.File('r'))
+def cli(url, file, **kwargs):
+
+    if url:
+        convert_url(url, **kwargs)
+
+    elif file:
+        for line in file.readlines():
+            line = line.strip()
+            if line and not line.startswith("#"):
+                convert_url(line, **kwargs)
 
 if __name__ == '__main__':
     cli()
