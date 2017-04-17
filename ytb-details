@@ -15,7 +15,10 @@ DETAILS = """
 
 
 def video_details(url):
-    video = pafy.new(url)
+    try:
+        video = pafy.new(url)
+    except OSError:  # For Private Videos
+        return 0
 
     size = 0
     res = 0
