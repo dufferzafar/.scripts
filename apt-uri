@@ -60,7 +60,7 @@ def main(packages,
             url, deb, size, md5 = line.split()
 
             # Skip, if the file already exists
-            if new and not os.path.exists("/var/cache/apt/archives/" + deb):
+            if new and os.path.exists("/var/cache/apt/archives/" + deb.decode('utf-8')):
                 continue
 
             if display_size:
@@ -68,6 +68,7 @@ def main(packages,
 
             # FIXME: Possible source of UnicodeDecodeError?
             print(url[1:-1].decode('utf-8'))
+            # print("/var/cache/apt/archives/" + deb.decode('utf-8'))
 
             total += int(size)
 
