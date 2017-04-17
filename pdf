@@ -5,13 +5,8 @@ import subprocess
 import click
 import requests
 
-from lxml.html import fromstring
-
-
-def fetch_title(url):
-    r = requests.get(url)
-    tree = fromstring(r.content)
-    return tree.findtext('.//title')
+from slugify import slugify
+import lxml.html
 
 
 def cmd_cutycapt(url, title):
@@ -35,6 +30,18 @@ def cmd_wkhtmltopdf(url, title):
     ]
 
 
+def fetch_title_slug(url):
+    """ Return title of a webpage as slug. """
+
+    r = requests.get(url.strip())
+    tree = lxml.html.fromstring(r.content)
+    return tree.findtext('.//title').strip()
+
+
+def convert_url(url, cutycapt, wkhtmltopdf):
+    title = fetch_title_slug(url)
+    if not title:
+        title = slugify(url)
 
     cmd = cmd_wkhtmltopdf(url, title)
 
