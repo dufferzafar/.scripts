@@ -84,7 +84,8 @@ if __name__ == '__main__':
             print('"' + '"\n"'.join(results) + '"')
         elif args['--picard']:
             # TODO: Allow user to pass correct path to Picard executable
-            command = ["/home/dufferzafar/dev/picard/tagger.py"]
+            # Or maybe just run 'picard' and hope it is in path?
+            command = ["/home/dufferzafar/.apps/picard/tagger.py"]
             command.extend(results)
 
             with open(os.devnull, 'wb') as devnull:
