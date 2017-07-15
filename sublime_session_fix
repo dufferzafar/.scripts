@@ -1,0 +1,44 @@
+#!/usr/bin/env python3
+
+"""
+Remove workspaces whose path doesn't exist.
+
+Usage:
+
+    $ sublime_session_fix
+"""
+
+import json
+import os
+
+# TODO: Take this as an argument?
+SESSION_FILE = os.path.expanduser(
+    "~/.config/sublime-text-3/Local/Session.sublime_session"
+)
+
+
+def fix_workspaces():
+    with open(SESSION_FILE, "r+") as session_file:
+        session = json.load(session_file)
+
+        # TODO: There are a lot of other places that have non-existent paths
+        # in session["settings"]["new_window_settings"]
+
+        # Only keep workspaces whose paths exist
+        rw = [
+            path
+            for path in session["workspaces"]["recent_workspaces"]
+            if os.path.exists(path)
+        ]
+        session["workspaces"]["recent_workspaces"] = rw
+
+        # Empty file
+        session_file.seek(0)
+        session_file.truncate()
+
+        # Write new data
+        json.dump(session, session_file, indent='\t')
+
+
+if __name__ == '__main__':
+    fix_workspaces()
