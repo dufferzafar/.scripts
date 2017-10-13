@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+
+import os
+import time
+from datetime import datetime
+
+import slugify
+
+# Generate timestamps for post id and date.
+ts = time.time()
+timeid = datetime.fromtimestamp(ts).strftime('%Y-%m-%d')
+timestamp = datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+
+title = raw_input("Title of the post?: ")
+
+# Generate the post id based on Jekyll's requirements.
+postid = timeid+'-'+slugify.slugify(unicode(title))+'.md'
+
+# Generate post meta. I've included custom image and caption tags.
+contents = """---
+layout: post
+title:  """+title+"""
+date:   """+timestamp+"""
+---"""
+
+if not os.path.isdir('_posts/'):
+
+    print(contents)
+
+else:
+
+    # Create the post.
+    post = '_posts/' + postid
+    with open(post, 'w') as file:
+        file.write(contents)
+
+    os.system('subl ' + post)
