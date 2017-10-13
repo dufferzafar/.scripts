@@ -5,6 +5,9 @@ import pyquery
 
 from datetime import date, datetime
 
+# Disables all the 'Unverified HTTPS request is being made' warnings
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 # Yes, your password is sent as plain text
 CREDENTIALS = dict(
@@ -14,7 +17,8 @@ CREDENTIALS = dict(
 
 r = requests.post(
     url='https://selfcare.mtsindia.in/index.html',
-    data=CREDENTIALS
+    data=CREDENTIALS,
+    verify=False,
 )
 
 # Quick heuristic to ensure that login was successful
@@ -34,6 +38,9 @@ suggested = int(data[:-3]) // days_left
 
 # Print out details
 output = """
+mts stats
+---------
+
 Balance: %s
 
 Expiry Date: %s
