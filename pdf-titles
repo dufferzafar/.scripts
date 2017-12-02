@@ -1,0 +1,81 @@
+#!/usr/bin/env python3
+
+"""
+Rename PDF files using their title and Author.
+
+Currently this uses a KDE specific package called KFileMetadata
+and it's dump CLI which I built on my machine. So this won't work for you.
+
+In future I might create a Python-only package for this.
+"""
+
+import os
+import subprocess
+
+import click
+
+
+def pdf_metadata(pdf):
+    """Extract metadata from a PDF file."""
+
+    cli = os.path.expanduser("~/.apps/bin/kmetadump")
+    data = subprocess.check_output([cli, pdf])
+
+    # Will this blow up?
+    data = data.decode("utf-8")
+
+    rv = {}
+    for line in data.split("\n"):
+        if line:
+            l = line.split("-->")
+            rv[l[0].strip().lower()] = l[1].strip()
+
+    return rv
+
+
+def normalize(path):
+    return path.replace("?", "")
+
+
+@click.command()
+@click.argument('src', nargs=-1, type=click.Path(exists=True))
+def cli(src, **kwargs):
+
+    for file in src:
+        if file.endswith("pdf"):
+            data = pdf_metadata(file)
+
+            if 'title' not in data:
+                print(file + " --> " + "  ")
+                continue
+
+            newname = ""
+
+            newname += data['title']
+
+            if 'author' in data:
+                newname += " - " + data['author']
+
+            # Title - Author.pdf
+            if 'creation date' in data:
+                newname += " - " + data['creation date'][:4]
+                # newname += data['creation date'][:4] + " - "
+
+            newname += ".pdf"
+            newname = normalize(newname)
+
+            print(file + " --> " + newname)
+
+            dir_ = os.path.dirname(file)
+            newpath = os.path.join(dir_, newname)
+
+            # A PDF already exists with the same name
+            # TODO: Improve this
+            if os.path.exists(newpath):
+                newname += file
+                newpath = os.path.join(dir_, newname)
+
+            os.rename(file, newpath)
+
+if __name__ == '__main__':
+    cli()
