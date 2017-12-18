@@ -1,0 +1,51 @@
+#!/usr/bin/env python3.6
+
+"""
+Move all useless lines from ~/.zsh_history to a secondary file.
+
+This uses custom heuristics to determine if a line is useful or not,
+and you may not like the results it produces. Use with caution.
+"""
+
+import os
+import re
+
+# http://zsh.sourceforge.net/Doc/Release/Options.html#index-EXTENDEDHISTORY
+ZSH_EXTENDED_RE = re.compile(r"^:\s+(\d+):(\d+);(.*)", re.DOTALL)
+
+
+def zsh_extract_parts(lines):
+    """ Parse a ZSH history line (in the EXTENDED_HISTORY format). """
+
+    lines = "".join(lines).strip()
+
+    m = re.match(ZSH_EXTENDED_RE, lines)
+    if m:
+        return m.group(1), m.group(3)
+
+
+def zsh_history(path=os.path.expanduser("~/.zsh_history_copy")):
+    """
+    Yield entries in the ZSH History file.
+
+    This is complicated by the fact that commands may span multiple lines.
+    """
+
+    lines = []
+
+    with open(path) as hfile:
+
+        for line in hfile:
+            lines.append(line)
+
+            if not line.strip().endswith('\\'):
+                yield zsh_extract_parts(lines)
+                lines = []
+
+    if lines:
+        yield zsh_extract_parts(lines)
+
+
+if __name__ == '__main__':
+    for entry in zsh_history():
+        print(entry)
