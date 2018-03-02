@@ -1,0 +1,53 @@
+#!/usr/bin/env python3
+
+import sys
+from datetime import datetime
+
+import flask
+
+app = flask.Flask(__name__)
+
+
+HTML = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>pWeb</title>
+
+    <script>
+        var src = new EventSource("/event-stream");
+        src.onmessage = function(ev) {
+            document.getElementById("output").innerHTML += ev.data + "\\n"
+        }
+    </script>
+</head>
+
+<body>
+    <h2>Command started on: %s</h2>
+    <pre id="output"></pre>
+</body>
+</html>
+""" % datetime.now()
+
+
+@app.route('/event-stream')
+def event_stream():
+    def stdin_pipe():
+        """Read from stdin, send to client."""
+        line = sys.stdin.readline()
+        while line:
+            # Server Sent Event Format
+            yield b"data:" + line.encode() + b"\n\n"
+            line = sys.stdin.readline()
+
+    return flask.Response(stdin_pipe(), mimetype='text/event-stream')
+
+
+@app.route('/')
+def get_page():
+    return HTML
+
+
+if __name__ == "__main__":
+    # bjoern.run(app, '0.0.0.0', 8020, reuse_port=True)
+    app.run(debug=True, threaded=True)
