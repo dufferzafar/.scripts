@@ -37,23 +37,30 @@ def get_links_from_page(page_url):
 def get_links_from_albums_page(album_url):
     urls = [
         url for url in get_links_from_page(album_url)
-        if '.com/downloads/' in url
+        if '/downloads/' in url
     ]
 
     pool = ThreadPool(processes=5)
-    for result in pool.imap_unordered(get_links_from_page, urls):
-        print("\n".join((url for url in result if url.endswith('.mp3'))))
+    for results in pool.imap_unordered(get_links_from_page, urls):
+        print("\n".join(url for url in results if "index.php?id=" in url))
+
 
 if __name__ == '__main__':
     args = docopt.docopt(__doc__)
 
-    if args['<url>']:
-        get_links_from_albums_page(args['<url>'])
+    url = args['<url>']
+    file = args['<file>']
+
+    if url:
+        if "/downloads/" in url:
+            print(get_links_from_page(url))
+        else:
+            get_links_from_albums_page(url)
     elif args['-i']:
-        if args['<file>'] == '-':
+        if file == '-':
             file = sys.stdin
         else:
-            file = open(args['<file>'])
+            file = open(file)
 
         # TODO: Is reading all lines at once necessary?
         for url in file.readlines():
