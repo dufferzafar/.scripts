@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 
 """
-Usage: pdf-merge [options] <file>...
+Usage: pdf-merge [options] [<file>...]
 
 Options:
-    -o <output>, --output <output>
+    -o <output>
+    -f <file-list>
+    -C <category-sep>
+
+    -F
 
 Example:
 
@@ -25,44 +29,78 @@ import docopt
 from PyPDF2 import utils, PdfFileReader, PdfFileWriter
 
 
+def fatal(msg):
+    print(msg, file=sys.stderr)
+    sys.exit(1)
+
+
 def main(args):
+
+    if args['-f'] == '-':
+        files = sys.stdin
+    elif args['-f']:
+        files = open(args['-f'])
+    elif args['<file>']:
+        files = args['<file>']
+    else:
+        fatal("Incorrect Usage")
 
     # Get PDF files
     files_to_merge = {}
-    for fname in args['<file>']:
+    for fname in files:
         try:
-            pdf_file = PdfFileReader(open(fname, "rb"))
+            pdf_file = PdfFileReader(open(fname.strip(), "rb"))
         except(utils.PdfReadError):
-            print("'%s' is not a valid PDF file." % fname, file=sys.stderr)
-            sys.exit(1)
+            fatal("'%s' is not a valid PDF file." % fname)
         except(IOError):
-            print("'%s' could not be found." % fname, file=sys.stderr)
-            sys.exit(1)
+            fatal("'%s' could not be found." % fname)
         else:
-            files_to_merge[fname] = pdf_file
+            files_to_merge[fname.strip()] = pdf_file
 
     # Merge page by page
     output_stream = PdfFileWriter()
     output_page_num = 0
+
+    category_marks = {}
 
     for fname, fobj in files_to_merge.items():
 
         for i in range(fobj.numPages):
             output_stream.addPage(fobj.getPage(i))
 
-        path, name = os.path.split(str(fname))
-        _, folder = os.path.split(path)
+        # Get basename of file
+        path, mark_name = os.path.split(str(fname))
 
-        # TODO: 3rd argument (parent) to this function will allow
-        # nested bookmarks
+        # Remove .pdf extension
+        mark_name = mark_name[:-4]
 
-        output_stream.addBookmark(folder + "/" + name[:-4], output_page_num)
+        # TODO: How to ensure that -F & -C are not used together?
+
+        # Prepend with folder name
+        if args['-F']:
+            _, folder = os.path.split(path)
+            mark_name = folder + "/" + mark_name
+
+        # Create a parent bookmark for this category
+        if args['-C']:
+            cat, name = mark_name.split(args['-C'])
+            cat = cat.strip()
+            name = name.strip()
+
+            # A parent bookmark for this category has not been created yet
+            if cat not in category_marks:
+                category_marks[cat] = output_stream.addBookmark(cat, output_page_num)  # noqa
+
+            output_stream.addBookmark(name, output_page_num, category_marks[cat]) # noqa
+
+        else:
+            output_stream.addBookmark(mark_name, output_page_num)
 
         output_page_num += fobj.numPages
 
     # Output file name: either provided or random
-    if args['--output']:
-        output_pdf = args['--output']
+    if args['-o']:
+        output_pdf = args['-o']
     else:
         output_pdf = time.strftime("Merged_%Y-%m-%d_%H-%M-%S.pdf")
 
