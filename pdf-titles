@@ -24,17 +24,23 @@ def pdf_metadata(pdf):
     # Will this blow up?
     data = data.decode("utf-8")
 
+    field = ""
+
     rv = {}
     for line in data.split("\n"):
         if line:
-            l = line.split("-->")
-            rv[l[0].strip().lower()] = l[1].strip()
+            if "-->" in line:
+                L = line.split("-->")
+                field = L[0].strip().lower()
+                rv[field] = L[1].strip()
+            else:
+                rv[field] += line
 
     return rv
 
 
 def normalize(path):
-    return path.replace("?", "")
+    return path.replace("?", "").replace(":", "").replace("/", "")
 
 
 @click.command()
@@ -53,8 +59,8 @@ def cli(src, **kwargs):
 
             newname += data['title']
 
-            if 'author' in data:
-                newname += " - " + data['author']
+            # if 'author' in data:
+            #     newname += " - " + data['author']
 
             # Title - Author.pdf
             if 'creation date' in data:
@@ -76,6 +82,7 @@ def cli(src, **kwargs):
                 newpath = os.path.join(dir_, newname)
 
             os.rename(file, newpath)
+
 
 if __name__ == '__main__':
     cli()
