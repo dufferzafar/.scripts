@@ -8,10 +8,12 @@ import click
 
 import humanfriendly
 
-DETAILS = """
+TITLE = """
 # {title}
-# {duration} - {size} - {resolution}
-{url}"""
+{url}
+"""
+
+FORMATS = "# {duration} - {size} - {resolution}"
 
 
 def video_details(url):
@@ -20,23 +22,22 @@ def video_details(url):
     except OSError:  # For Private Videos
         return 0
 
-    size = 0
-    res = 0
+    print(TITLE.format(title=video.title, url=url))
+
+    size = res = 0
     for s in video.streams:
         w, h = s.dimensions
-        if w == 640:
-            size = s.get_filesize()
-            res = s.resolution
+        if w != 640:
+            continue
 
-    print(
-        DETAILS.format(
-            title=video.title,
+        size = s.get_filesize()
+        res = s.resolution
+
+        print(FORMATS.format(
             duration=video.duration,
             size=humanfriendly.format_size(size),
-            resolution=res,
-            url=url
+            resolution=res)
         )
-    )
 
     return size
 
@@ -57,6 +58,7 @@ def main(url, file):
                 total += size
 
         print("# Total Download Size: %s" % humanfriendly.format_size(total))
+
 
 if __name__ == '__main__':
     main()
