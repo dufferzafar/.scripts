@@ -7,11 +7,11 @@
 #
 # Usage:
 #
-# hide-file '*.pyc'
+# hide-files '*.pyc'
 
 # List all matching files, while ignoring some folders
 find .                                 \
-    -type f                            \
+    # -type f                            \
     -iname "$1"                        \
     ! -path '*/.git/*'                 \
     ! -path '*/env/*'                  \

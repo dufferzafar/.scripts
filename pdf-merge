@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 """
+Merge multiple PDFs into one - while adding bookmarks.
+
 Usage: pdf-merge [options] [<file>...]
 
 Options:
