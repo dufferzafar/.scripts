@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+
+""" Fetch latest distro news. """
+
+import textwrap
+
+import click
+import feedparser
+import lxml.html as html
+import requests
+
+
+RSS_URLS = {
+    "antergos": "https://antergos.com/feed/",
+    "pacbsd": "https://pacbsd.org/index.xml",
+    "archlinux": "https://www.archlinux.org/feeds/news/",
+    "chakra": "https://community.chakralinux.org/c/news.rss",
+    "kaosx": "https://kaosx.us/feed.xml",
+    "manjaro": "https://forum.manjaro.org/c/announcements/stable-updates.rss",
+    "netrunner": "http://www.netrunner-os.com/feed/",
+    "parabola": "https://www.parabola.nu/feeds/news/",
+}
+
+
+# TODO: Add some distro detection logic
+def detect_distro():
+    return "manjaro"
+
+def tighten(text, nlines=20):
+    # Break into lines and remove leading and trailing space on each
+    lines = (line.strip() for line in text.splitlines())
+    # Break multi-headlines into a line each
+    chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
+    # Drop blank lines
+    tight_lines = [c for c in chunks]
+    # Convert to text
+    text = '\n'.join(textwrap.fill(l, 120) for l in tight_lines[:nlines])
+    return text
+
+def main():
+
+    distro = detect_distro()
+
+    feed = feedparser.parse(RSS_URLS[distro])
+    first = feed.entries[0]
+
+    summary = html.fromstring(first['summary'])
+    text = summary.text_content()
+
+    click.secho(first.title, fg="bright_yellow")
+    click.secho(first.link, fg="cyan")
+    print("-" * len(first.link), "\n")
+
+    print(tighten(text))
+
+if __name__ == "__main__":
+    main()
