@@ -1,0 +1,68 @@
+#!/usr/bin/env python3.6
+
+"""
+
+A script that updates my ~/.apps
+
+Which contains an assortment of tools downloaded from
+all over the internet.
+
+Some of them are git repositories, some are python packages
+while others are directly downloaded tarballs.
+
+"""
+
+
+import os
+import requests
+
+from collections import namedtuple
+from pathlib import Path
+
+
+APPS_ROOT = Path("~/.apps/").expanduser()
+
+# Applications downloaded from GitHub releases
+gh_app = namedtuple("App", ["repo", "path", "asset_match"])
+APPS_GH_RELEASES = [
+    gh_app("sharkdp/fd", "fd", "linux.tar.gz"),
+    gh_app("BurntSushi/ripgrep", "rg", "x86_64-unknown-linux-musl.tar.gz"),
+    gh_app("BurntSushi/xsv", "xsv", "x86_64-unknown-linux-musl.tar.gz"),
+    gh_app("ogham/exa", "exa", "linux"),
+    gh_app("EricChiang/pup", "pup", "linux_amd64"),
+    gh_app("casey/just", "just", "x86_64-unknown-linux-musl.tar.gz"),
+]
+
+
+def fetch_latest_release(repo, asset_match):
+    api = f"https://api.github.com/repos/{repo}/releases/latest"
+    resp = requests.get(api).json()
+
+    if "assets" in resp:
+        assets = [
+            a["browser_download_url"] for a in resp["assets"]
+            if asset_match in a["browser_download_url"]
+        ]
+        return assets[0]
+
+
+def main():
+
+    # TODO: Update git repos?
+
+    # MusicBrainz Picard
+    # cd ~/.apps/picard
+    # git pull
+
+    # If no error in above command
+    # Display a success message
+
+    # Update all GitHub relases
+    for app in APPS_GH_RELEASES:
+        print("Updating: %s" % app[0])
+        print(fetch_latest_release(app.repo, app.asset_match))
+
+#########################################################################
+
+if __name__ == '__main__':
+    main()
