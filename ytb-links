@@ -9,6 +9,7 @@ Usage:
     ytb-links <url> -f <file>
 
 Examples:
+    ytb-links [-S] <url> [-f=<file>]
 
     ytb-links https://www.youtube.com/playlist?list=PL8B24C31197EC371C
 
@@ -46,6 +47,22 @@ def pq_from_file_or_url(url, file):
     return pq
 
 
+def pq_from_url_selenium(url):
+    from selenium import webdriver
+    drv = webdriver.PhantomJS()
+    drv.set_window_size(1336, 768)
+
+    drv.get(url)
+
+    # Needs Wait?
+    html = drv.page_source
+    pq = pyquery.PyQuery(html)
+
+    drv.quit()
+
+    return pq
+
+
 def from_ytb_playlist(url, file=None):
     pq = pq_from_file_or_url(url, file)
 
@@ -62,8 +79,12 @@ def from_ytb_playlist(url, file=None):
 
 
 # TODO: Extract file support to a common place, and add in this function too
-def from_generic_page(url, file=None):
-    pq = pq_from_file_or_url(url, file)
+# BUG: This doesn't catch all the
+def from_generic_page(url, file=None, selenium=False):
+    if selenium:
+        pq = pq_from_url_selenium(url)
+    else:
+        pq = pq_from_file_or_url(url, file)
 
     print(HEADER.format(title=pq('title').text(), url=url))
     print('#' * (len(url) + 2))
@@ -84,4 +105,7 @@ if __name__ == '__main__':
     if url and "youtube.com/playlist" in url:
         from_ytb_playlist(url, file=file)
     elif url:
-        from_generic_page(url, file=file)
+        # if args['-S']:
+        #     from_generic_page(url, selenium=True)
+        # else:
+            from_generic_page(url, file=file)
